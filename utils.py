@@ -18,7 +18,7 @@ from attention.luong_general import LuongGeneralAttention
 
 from models.base_models import VanillaRNN, VanillaLSTM, BidirectionalRNN, BidirectionalLSTM,AttentionClassifier
 
-from utils import load_glove_embeddings, load_imdb_dataset, CustomDataset, visualize_attention
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -97,7 +97,7 @@ def load_imdb_dataset():
     dataset = load_dataset("stanfordnlp/imdb")
     combined = concatenate_datasets([dataset['train'], dataset['test']])
     df = combined.to_pandas()
-    df_sampled = df.sample(n=30000, random_state=42, stratify=df['label'])
+    df_sampled, _ = train_test_split(df, train_size=30000, stratify=df['label'], random_state=42)
     train_df, test_df = train_test_split(df_sampled, test_size=0.2, stratify=df['label'], random_state=42)
     return train_df.reset_index(drop=True), test_df.reset_index(drop=True)
 
