@@ -84,3 +84,24 @@ class BidirectionalLSTM(nn.Module):
             return output, hidden_cat
         else:
             return self.fc(self.dropout(hidden_cat))
+        
+
+
+class AttentionClassifier(nn.Module):
+    def __init__(self,base_model,attention_module,hidden_dim,output_dim,dropout=0.3):
+        super(AttentionClassifier,self).__init__()
+        self.base_model = base_model
+        self.attention = attention_module
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(hidden_dim,output_dim)
+
+
+    def forward(self,input_ids,lengths):
+        encoder_outputs,final_hidden = self.base_model(input_ids,lengths,use_attention=True)
+        context_vector,attention_weights = self.attention(encoder_outputs,final_hidden)
+        logits=self.fc(self.dropout(context_vector))
+        return logits,attention_weights
+    
+
+
+
