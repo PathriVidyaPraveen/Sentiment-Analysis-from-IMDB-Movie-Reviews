@@ -19,6 +19,9 @@ from attention.luong_general import LuongGeneralAttention
 from models.base_models import VanillaRNN, VanillaLSTM, BidirectionalRNN, BidirectionalLSTM,AttentionClassifier
 
 from utils import load_glove_embeddings, load_imdb_dataset, CustomDataset, visualize_attention
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
 
 
@@ -99,9 +102,6 @@ def load_imdb_dataset():
     return train_df.reset_index(drop=True), test_df.reset_index(drop=True)
 
 
-
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 def visualize_attention(model, dataloader, device, vocab, model_name="model", attention_name="attention", num_samples=3):
     model.eval()
