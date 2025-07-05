@@ -110,4 +110,5 @@ if __name__ == '__main__':
     print(f"Confusion Matrix:\n{cm}")
 
     if args.attention != 'None':
-        visualize_attention(model, test_loader, device, vocab)
+        visualize_attention(model, test_loader, device, vocab, model_name=args.model, attention_name=args.attention)
+

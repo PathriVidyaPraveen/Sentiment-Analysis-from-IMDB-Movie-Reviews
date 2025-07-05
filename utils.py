@@ -91,10 +91,12 @@ def load_imdb_dataset():
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def visualize_attention(model, dataloader, device, vocab, index_to_word=None, num_samples=3):
+def visualize_attention(model, dataloader, device, vocab, model_name="model", attention_name="attention", num_samples=3):
     model.eval()
     word_lookup = {v: k for k, v in vocab.items()}
     printed = 0
+
+    os.makedirs("attention_outputs", exist_ok=True)
 
     with torch.no_grad():
         for inputs, lengths, labels in dataloader:
@@ -102,26 +104,30 @@ def visualize_attention(model, dataloader, device, vocab, index_to_word=None, nu
             outputs = model(inputs, lengths)
 
             if hasattr(model, 'attention_weights'):
-                attn_weights = model.attention_weights 
+                attn_weights = model.attention_weights  
 
                 for i in range(min(num_samples, inputs.size(0))):
                     tokens = [word_lookup.get(tok.item(), '<UNK>') for tok in inputs[i][:lengths[i]]]
                     weights = attn_weights[i][:lengths[i]].cpu().numpy()
 
-                    # Print attention values
+                    # Print attention weights to log
                     print(f"\nSample {printed + 1}:")
                     print("Review:", ' '.join(tokens))
                     print("Attention Weights:", weights)
 
-                    # Plot heatmap
+                    # Save heatmap
                     plt.figure(figsize=(12, 1))
                     sns.heatmap([weights], xticklabels=tokens, cmap="YlGnBu", cbar=True, annot=True)
-                    plt.title(f"Attention Heatmap for Sample {printed + 1}")
+                    plt.title(f"{model_name} + {attention_name} Attention")
                     plt.xticks(rotation=45, ha='right')
                     plt.yticks([])
                     plt.tight_layout()
-                    plt.show()
+
+                    filename = f"attention_outputs/{model_name}_{attention_name}_sample{printed+1}.png"
+                    plt.savefig(filename)
+                    plt.close()
 
                     printed += 1
+
             if printed >= num_samples:
                 break
