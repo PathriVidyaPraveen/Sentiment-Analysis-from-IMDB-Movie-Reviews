@@ -4,7 +4,11 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 
-from attention import BahdanauAttention, LuongDotAttention, LuongGeneralAttention, LuongConcatAttention
+from attention.bahdanau import BahdanauAttention
+from attention.luong_dot import LuongDotAttention
+from attention.luong_concat import LuongConcatAttention
+from attention.luong_general import LuongGeneralAttention
+
 from models.base_models import VanillaRNN, VanillaLSTM, BidirectionalRNN, BidirectionalLSTM,AttentionClassifier
 
 from utils import load_glove_embeddings, load_imdb_dataset, CustomDataset, visualize_attention
