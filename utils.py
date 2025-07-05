@@ -82,7 +82,8 @@ def load_imdb_dataset():
     dataset = load_dataset("stanfordnlp/imdb")
     combined = concatenate_datasets([dataset['train'], dataset['test']])
     df = combined.to_pandas()
-    train_df, test_df = train_test_split(df, test_size=0.2, stratify=df['label'], random_state=42)
+    df_sampled = df.sample(n=30000, random_state=42, stratify=df['label'])
+    train_df, test_df = train_test_split(df_sampled, test_size=0.2, stratify=df['label'], random_state=42)
     return train_df.reset_index(drop=True), test_df.reset_index(drop=True)
 
 
