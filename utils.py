@@ -98,7 +98,7 @@ def load_imdb_dataset():
     combined = concatenate_datasets([dataset['train'], dataset['test']])
     df = combined.to_pandas()
     df_sampled, _ = train_test_split(df, train_size=30000, stratify=df['label'], random_state=42)
-    train_df, test_df = train_test_split(df_sampled, test_size=0.2, stratify=df['label'], random_state=42)
+    train_df, test_df = train_test_split(df_sampled, test_size=0.2, stratify=df_sampled['label'], random_state=42)
     return train_df.reset_index(drop=True), test_df.reset_index(drop=True)
 
 
@@ -115,31 +115,23 @@ def visualize_attention(model, dataloader, device, vocab, model_name="model", at
             inputs, lengths = inputs.to(device), lengths.to(device)
             outputs = model(inputs, lengths)
 
-            if hasattr(model, 'attention_weights'):
-                attn_weights = model.attention_weights  
+            if isinstance(outputs, tuple):
+                logits, attention_weights = outputs
+            else:
+                continue  # skip non-attention models
 
-                for i in range(min(num_samples, inputs.size(0))):
-                    tokens = [word_lookup.get(tok.item(), '<UNK>') for tok in inputs[i][:lengths[i]]]
-                    weights = attn_weights[i][:lengths[i]].cpu().numpy()
+            for i in range(min(num_samples, inputs.size(0))):
+                tokens = [word_lookup.get(tok.item(), '<UNK>') for tok in inputs[i][:lengths[i]]]
+                weights = attention_weights[i][:lengths[i]].cpu().numpy()
 
-                    # Print attention weights to log
-                    print(f"\nSample {printed + 1}:")
-                    print("Review:", ' '.join(tokens))
-                    print("Attention Weights:", weights)
+                output_lines = [f"{token}\t{weight:.4e}" for token, weight in zip(tokens, weights)]
+                output_text = "Token\tAttentionWeight\n" + "\n".join(output_lines)
 
-                    # Save heatmap
-                    plt.figure(figsize=(12, 1))
-                    sns.heatmap([weights], xticklabels=tokens, cmap="YlGnBu", cbar=True, annot=True)
-                    plt.title(f"{model_name} + {attention_name} Attention")
-                    plt.xticks(rotation=45, ha='right')
-                    plt.yticks([])
-                    plt.tight_layout()
+                filename = f"attention_outputs/{model_name}_{attention_name}_sample{printed + 1}.txt"
+                with open(filename, 'w', encoding='utf-8') as f:
+                    f.write(output_text)
 
-                    filename = f"attention_outputs/{model_name}_{attention_name}_sample{printed+1}.png"
-                    plt.savefig(filename)
-                    plt.close()
+                printed += 1
+                if printed >= num_samples:
+                    return
 
-                    printed += 1
-
-            if printed >= num_samples:
-                break

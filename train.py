@@ -38,7 +38,12 @@ LR = 0.001
 
 for model in models:
     for attention in attentions:
-        print(f"\n===== Training {model} with {attention} Attention =====")
+        print(f"\n Training {model} with {attention} Attention ......")
+
+        model_path = f"saved_models/{model}_{attention}.pth"
+        if os.path.exists(model_path):
+            print(f"Skipping {model} with {attention} — already trained.\n")
+            continue
 
         # Define command
         cmd = [

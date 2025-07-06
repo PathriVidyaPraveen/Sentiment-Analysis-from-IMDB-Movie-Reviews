@@ -31,14 +31,21 @@ def build_model(model_name, attention_name, embedding_matrix, hidden_dim, output
         return base_model
 
     attention_cls = {
-        'Bahdanau': BahdanauAttention,
-        'LuongDot': LuongDotAttention,
-        'LuongGeneral': LuongGeneralAttention,
-        'LuongConcat': LuongConcatAttention,
+        'Bahdanau': lambda attn_input_dim, hidden_dim: BahdanauAttention(attn_input_dim, hidden_dim, attention_dim=64),
+        'LuongDot': lambda attn_input_dim, hidden_dim: LuongDotAttention(),
+        'LuongGeneral': lambda attn_input_dim, hidden_dim: LuongGeneralAttention(attn_input_dim),
+        'LuongConcat': lambda attn_input_dim, hidden_dim: LuongConcatAttention(attn_input_dim, hidden_dim),
     }[attention_name]
 
     attn_input_dim = hidden_dim if 'Vanilla' in model_name else hidden_dim * 2
-    attention = attention_cls(attn_input_dim, hidden_dim)
+    
+    if attention_name == 'Bahdanau':
+        decoder_dim = attn_input_dim  # decoder hidden matches encoder output shape in bidirectional case
+        attention = BahdanauAttention(attn_input_dim, decoder_dim, attention_dim=64)
+    else:
+        attention = attention_cls(attn_input_dim, hidden_dim)
+
+
     return AttentionClassifier(base_model, attention, attn_input_dim, output_dim)
 
 
@@ -49,6 +56,8 @@ def train(model, dataloader, criterion, optimizer, device):
         inputs, lengths, labels = inputs.to(device), lengths.to(device), labels.to(device)
         optimizer.zero_grad()
         outputs = model(inputs, lengths)
+        if isinstance(outputs, tuple):  # For attention models
+            outputs = outputs[0]
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -63,6 +72,8 @@ def evaluate(model, dataloader, device):
         for inputs, lengths, labels in dataloader:
             inputs, lengths = inputs.to(device), lengths.to(device)
             outputs = model(inputs, lengths)
+            if isinstance(outputs, tuple):  # For attention models
+                outputs = outputs[0]
             preds = torch.argmax(outputs, dim=1).cpu().tolist()
             all_preds.extend(preds)
             all_labels.extend(labels.tolist())
