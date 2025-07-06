@@ -1,0 +1,12 @@
+Loading GloVe from glove.6B.100d.txt...
+Loading IMDB dataset...
+Epoch 1: Train Loss = 0.4927
+Epoch 2: Train Loss = 0.3686
+Epoch 3: Train Loss = 0.2910
+Epoch 4: Train Loss = 0.2403
+Epoch 5: Train Loss = 0.2406
+Model saved at saved_models/BidirectionalRNN_LuongDot.pth
+Accuracy: 0.7930, Precision: 0.8095, Recall: 0.7930, F1: 0.7902
+Confusion Matrix:
+[[2725  275]
+ [ 967 2033]]
